@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🦕 Dinosaur World</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Comic Sans MS', 'Trebuchet MS', cursive;
+            background: linear-gradient(135deg, #FFB347 0%, #FFA500 50%, #FF8C00 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 30px 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-bottom: 4px dashed #FFD700;
+        }
+        
+        .header h1 {
+            font-size: 3.5em;
+            color: #FFD700;
+            text-shadow: 3px 3px 0px #FF6B6B;
+            margin-bottom: 10px;
+        }
+        
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+        
+        .nav-btn {
+            background: linear-gradient(135deg, #00FF88 0%, #00D4FF 100%);
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .dino-section {
+            background: linear-gradient(135deg, rgba(139, 69, 19, 0.2) 0%, rgba(160, 82, 45, 0.2) 100%);
+            border: 4px solid #8B4513;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        .dino-title {
+            font-size: 2.5em;
+            color: #FFD700;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .dino-canvas {
+            width: 100%;
+            height: 400px;
+            background: linear-gradient(to bottom, #87CEEB 0%, #90EE90 100%);
+            border-radius: 15px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .dino-controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .dino-btn {
+            background: linear-gradient(135deg, #FF6B6B 0%, #FF4444 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .dino-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 25px rgba(255, 100, 100, 0.5);
+        }
+        
+        .info-panel {
+            background: rgba(255, 215, 0, 0.2);
+            border: 3px solid #FFD700;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            font-size: 1.1em;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .stat-box {
+            background: rgba(255, 215, 0, 0.2);
+            border: 3px solid #FFD700;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2em;
+            color: #FFD700;
+            font-weight: bold;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            color: #fff;
+            margin-top: 5px;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #FFD700;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🦖 Dinosaur World 🦕</h1>
+        <p style="font-size: 1.3em;">Meet the mighty prehistoric creatures!</p>
+        <div class="nav-buttons">
+            <button class="nav-btn" onclick="window.location.href='/'">← Back Home</button>
+            <button class="nav-btn" onclick="addScore(50)">🎯 Collect Points</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- T-Rex Section -->
+        <div class="dino-section">
+            <div class="dino-title">🦖 T-Rex - King of Dinosaurs</div>
+            <div class="dino-canvas" id="trexCanvas"></div>
+            <div class="dino-controls">
+                <button class="dino-btn" onclick="roarT_Rex()">🔊 ROAR!</button>
+                <button class="dino-btn" onclick="walkT_Rex()">🚶 Walk</button>
+                <button class="dino-btn" onclick="jumpT_Rex()">⬆️ Jump</button>
+            </div>
+            <div class="info-panel">
+                <strong>Fun Fact:</strong> T-Rex was one of the largest meat-eating dinosaurs! It could run at 17 mph and bite with a force of 12,800 pounds! 🦷
+            </div>
+        </div>
+
+        <!-- Triceratops Section -->
+        <div class="dino-section">
+            <div class="dino-title">🦏 Triceratops - Three-Horned Beast</div>
+            <div class="dino-canvas" id="triCanvas"></div>
+            <div class="dino-controls">
+                <button class="dino-btn" onclick="chargeTriceratops()">⚡ Charge!</button>
+                <button class="dino-btn" onclick="shakeTriceratops()">💢 Shake</button>
+                <button class="dino-btn" onclick="restTriceratops()">😴 Rest</button>
+            </div>
+            <div class="info-panel">
+                <strong>Fun Fact:</strong> Triceratops had three horns and was one of the last dinosaurs to exist! It was a herbivore and could weigh up to 12 tons! 🌿
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-box">
+                <div class="stat-value" id="dinoCount">2</div>
+                <div class="stat-label">Dinosaurs Visited</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="score">0</div>
+                <div class="stat-label">Points Earned</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="time">0s</div>
+                <div class="stat-label">Time Exploring</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="interactions">0</div>
+                <div class="stat-label">Interactions</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>✨ Have fun learning about dinosaurs! ✨</p>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        let score = 0;
+        let interactions = 0;
+        let timeStarted = Date.now();
+
+        function createSimpleDinosaur(canvasId, color) {
+            const canvas = document.getElementById(canvasId);
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            
+            renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+            renderer.setClearColor(0x87CEEB, 0.1);
+            canvas.appendChild(renderer.domElement);
+
+            camera.position.z = 5;
+
+            // Create a simple dinosaur shape
+            const bodyGeometry = new THREE.BoxGeometry(2, 1.2, 0.8);
+            const bodyMaterial = new THREE.MeshPhongMaterial({ color: color });
+            const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+            scene.add(body);
+
+            // Head
+            const headGeometry = new THREE.SphereGeometry(0.6, 32, 32);
+            const head = new THREE.Mesh(headGeometry, bodyMaterial);
+            head.position.x = 1.2;
+            scene.add(head);
+
+            // Tail
+            const tailGeometry = new THREE.ConeGeometry(0.4, 2, 32);
+            const tail = new THREE.Mesh(tailGeometry, bodyMaterial);
+            tail.position.x = -1.5;
+            tail.rotation.z = Math.PI / 4;
+            scene.add(tail);
+
+            // Legs
+            for (let i = -1; i <= 1; i += 2) {
+                const legGeometry = new THREE.BoxGeometry(0.3, 1, 0.3);
+                const leg = new THREE.Mesh(legGeometry, bodyMaterial);
+                leg.position.y = -1;
+                leg.position.z = i * 0.5;
+                scene.add(leg);
+            }
+
+            // Lighting
+            const light = new THREE.DirectionalLight(0xffffff, 1);
+            light.position.set(5, 5, 5);
+            scene.add(light);
+            scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+
+            return { scene, camera, renderer, body };
+        }
+
+        // Create dinosaurs
+        const trexScene = createSimpleDinosaur('trexCanvas', 0xFF6B6B);
+        const triScene = createSimpleDinosaur('triCanvas', 0x45B7D1);
+
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // Gentle rotation
+            trexScene.body.rotation.y += 0.01;
+            triScene.body.rotation.y += 0.01;
+            
+            trexScene.renderer.render(trexScene.scene, trexScene.camera);
+            triScene.renderer.render(triScene.scene, triScene.camera);
+        }
+
+        function addScore(points) {
+            score += points;
+            interactions++;
+            document.getElementById('score').textContent = score;
+            document.getElementById('interactions').textContent = interactions;
+            
+            fetch('/api/add-score', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ points: points })
+            });
+        }
+
+        function roarT_Rex() {
+            addScore(10);
+            alert('🦖 ROOOAAARRRRR! 🦖');
+        }
+
+        function walkT_Rex() {
+            addScore(5);
+            alert('T-Rex is walking... stomp stomp stomp! 🚶');
+        }
+
+        function jumpT_Rex() {
+            addScore(15);
+            alert('T-Rex tries to jump! ⬆️ (Can dinosaurs jump?)');
+        }
+
+        function chargeTriceratops() {
+            addScore(20);
+            alert('⚡ CHARGE! Triceratops is running at full speed!');
+        }
+
+        function shakeTriceratops() {
+            addScore(10);
+            alert('💢 The ground is shaking! Triceratops is very angry!');
+        }
+
+        function restTriceratops() {
+            addScore(5);
+            alert('😴 Zzzzz... Triceratops is taking a nap!');
+        }
+
+        function updateTime() {
+            const elapsed = Math.floor((Date.now() - timeStarted) / 1000);
+            document.getElementById('time').textContent = elapsed + 's';
+        }
+
+        window.addEventListener('load', () => {
+            animate();
+            setInterval(updateTime, 1000);
+        });
+
+        window.addEventListener('resize', () => {
+            [trexScene, triScene].forEach(scene => {
+                const canvas = scene.renderer.domElement.parentElement;
+                const width = canvas.clientWidth;
+                const height = canvas.clientHeight;
+                scene.camera.aspect = width / height;
+                scene.camera.updateProjectionMatrix();
+                scene.renderer.setSize(width, height);
+            });
+        });
+    </script>
+</body>
+</html>

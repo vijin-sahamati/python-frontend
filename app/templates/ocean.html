@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐬 Ocean World</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Comic Sans MS', 'Trebuchet MS', cursive;
+            background: linear-gradient(135deg, #001f3f 0%, #003d82 50%, #0052b3 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 30px 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-bottom: 4px dashed #00FF88;
+        }
+        
+        .header h1 {
+            font-size: 3.5em;
+            color: #00FF88;
+            text-shadow: 3px 3px 0px #FF69B4;
+            margin-bottom: 10px;
+        }
+        
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+        
+        .nav-btn {
+            background: linear-gradient(135deg, #00FF88 0%, #00D4FF 100%);
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .ocean-scene {
+            background: linear-gradient(to bottom, #0052b3 0%, #001a4d 100%);
+            border: 4px solid #00FF88;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 30px;
+            height: 500px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 255, 136, 0.3);
+            position: relative;
+        }
+        
+        canvas {
+            width: 100% !important;
+            height: 100% !important;
+            display: block;
+        }
+        
+        .creatures-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .creature-card {
+            background: rgba(0, 255, 136, 0.1);
+            border: 3px solid #00FF88;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .creature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 255, 136, 0.4);
+            border-color: #FF69B4;
+        }
+        
+        .creature-emoji {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+        
+        .creature-name {
+            font-size: 1.5em;
+            color: #00FF88;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .creature-fact {
+            font-size: 0.95em;
+            color: #aaa;
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
+        
+        .creature-btn {
+            background: linear-gradient(135deg, #00FF88 0%, #FF69B4 100%);
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.95em;
+            transition: all 0.3s ease;
+        }
+        
+        .creature-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .control-btn {
+            background: linear-gradient(135deg, #00FF88 0%, #00D4FF 100%);
+            color: #000;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+        }
+        
+        .control-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .stat-box {
+            background: rgba(0, 255, 136, 0.2);
+            border: 3px solid #00FF88;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2em;
+            color: #00FF88;
+            font-weight: bold;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            color: #aaa;
+            margin-top: 5px;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #00FF88;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🐬 Ocean World 🌊</h1>
+        <p style="font-size: 1.3em;">Dive deep and meet amazing sea creatures!</p>
+        <div class="nav-buttons">
+            <button class="nav-btn" onclick="window.location.href='/'">← Back Home</button>
+            <button class="nav-btn" onclick="addScore(50)">🎯 Collect Points</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="ocean-scene" id="oceanCanvas"></div>
+
+        <div class="controls">
+            <button class="control-btn" onclick="addFish()">🐟 Add Fish</button>
+            <button class="control-btn" onclick="createBubbles()">🫧 Add Bubbles</button>
+            <button class="control-btn" onclick="clearOcean()">🧹 Clear</button>
+        </div>
+
+        <div class="creatures-grid">
+            <div class="creature-card">
+                <div class="creature-emoji">🐬</div>
+                <div class="creature-name">Dolphin</div>
+                <div class="creature-fact">Dolphins are intelligent and playful marine mammals!</div>
+                <button class="creature-btn" onclick="interactCreature('Dolphin', 30)">🎯 Interact</button>
+            </div>
+
+            <div class="creature-card">
+                <div class="creature-emoji">🦈</div>
+                <div class="creature-name">Shark</div>
+                <div class="creature-fact">Sharks are powerful ocean predators with amazing senses!</div>
+                <button class="creature-btn" onclick="interactCreature('Shark', 50)">🎯 Interact</button>
+            </div>
+
+            <div class="creature-card">
+                <div class="creature-emoji">🐢</div>
+                <div class="creature-name">Sea Turtle</div>
+                <div class="creature-fact">Sea turtles travel thousands of miles through the ocean!</div>
+                <button class="creature-btn" onclick="interactCreature('Turtle', 25)">🎯 Interact</button>
+            </div>
+
+            <div class="creature-card">
+                <div class="creature-emoji">🪼</div>
+                <div class="creature-name">Jellyfish</div>
+                <div class="creature-fact">Jellyfish have been in the ocean for over 500 million years!</div>
+                <button class="creature-btn" onclick="interactCreature('Jellyfish', 20)">🎯 Interact</button>
+            </div>
+
+            <div class="creature-card">
+                <div class="creature-emoji">🐙</div>
+                <div class="creature-name">Octopus</div>
+                <div class="creature-fact">Octopuses are super smart and can change colors instantly!</div>
+                <button class="creature-btn" onclick="interactCreature('Octopus', 40)">🎯 Interact</button>
+            </div>
+
+            <div class="creature-card">
+                <div class="creature-emoji">🦑</div>
+                <div class="creature-name">Squid</div>
+                <div class="creature-fact">Squids can shoot ink to escape from predators!</div>
+                <button class="creature-btn" onclick="interactCreature('Squid', 35)">🎯 Interact</button>
+            </div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-value" id="creatures">6</div>
+                <div class="stat-label">Creatures Spotted</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="score">0</div>
+                <div class="stat-label">Points Earned</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="time">0s</div>
+                <div class="stat-label">Time Diving</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="interactions">0</div>
+                <div class="stat-label">Interactions</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>✨ Discover the wonders of the deep ocean! ✨</p>
+    </div>
+
+    <script>
+        let score = 0;
+        let interactions = 0;
+        let timeStarted = Date.now();
+
+        const canvas = document.getElementById('oceanCanvas');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 10000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+
+        renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+        renderer.setClearColor(0x001a4d, 1);
+        canvas.appendChild(renderer.domElement);
+
+        camera.position.z = 100;
+
+        // Create water effect
+        const waterGeometry = new THREE.PlaneGeometry(400, 400, 64, 64);
+        const waterMaterial = new THREE.MeshPhongMaterial({
+            color: 0x0052b3,
+            shininess: 100,
+            emissive: 0x003d82
+        });
+        const water = new THREE.Mesh(waterGeometry, waterMaterial);
+        scene.add(water);
+
+        // Create some fish
+        const fish = [];
+
+        function createFish() {
+            const geometry = new THREE.ConeGeometry(5, 15, 8);
+            const colors = [0xFF6B6B, 0x4ECDC4, 0x45B7D1, 0xFFA07A, 0x98D8C8];
+            const material = new THREE.MeshPhongMaterial({ color: colors[Math.floor(Math.random() * colors.length)] });
+            const fishMesh = new THREE.Mesh(geometry, material);
+            fishMesh.position.x = (Math.random() - 0.5) * 300;
+            fishMesh.position.y = (Math.random() - 0.5) * 200;
+            fishMesh.position.z = (Math.random() - 0.5) * 100;
+            fishMesh.velocity = {
+                x: Math.random() * 2 - 1,
+                y: Math.random() * 2 - 1,
+                z: 0
+            };
+            scene.add(fishMesh);
+            fish.push(fishMesh);
+        }
+
+        // Create initial fish
+        for (let i = 0; i < 5; i++) createFish();
+
+        // Lighting
+        const light = new THREE.DirectionalLight(0xffffff, 0.6);
+        light.position.set(100, 100, 100);
+        scene.add(light);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Move fish
+            fish.forEach(f => {
+                f.position.x += f.velocity.x;
+                f.position.y += f.velocity.y;
+
+                // Bounce
+                if (f.position.x > 150) f.velocity.x = -Math.abs(f.velocity.x);
+                if (f.position.x < -150) f.velocity.x = Math.abs(f.velocity.x);
+                if (f.position.y > 100) f.velocity.y = -Math.abs(f.velocity.y);
+                if (f.position.y < -100) f.velocity.y = Math.abs(f.velocity.y);
+
+                f.rotation.z = Math.atan2(f.velocity.y, f.velocity.x);
+            });
+
+            renderer.render(scene, camera);
+        }
+
+        function addFish() {
+            createFish();
+            interactions++;
+            addScore(10);
+            document.getElementById('interactions').textContent = interactions;
+        }
+
+        function createBubbles() {
+            for (let i = 0; i < 20; i++) {
+                const bubbleGeometry = new THREE.SphereGeometry(Math.random() * 3 + 2, 16, 16);
+                const bubbleMaterial = new THREE.MeshBasicMaterial({
+                    color: 0x00FF88,
+                    transparent: true,
+                    opacity: 0.3,
+                    wireframe: true
+                });
+                const bubble = new THREE.Mesh(bubbleGeometry, bubbleMaterial);
+                bubble.position.x = (Math.random() - 0.5) * 300;
+                bubble.position.y = (Math.random() - 0.5) * 200;
+                bubble.lifetime = 60;
+                scene.add(bubble);
+            }
+            interactions++;
+            addScore(15);
+            document.getElementById('interactions').textContent = interactions;
+        }
+
+        function clearOcean() {
+            fish.forEach(f => scene.remove(f));
+            fish.length = 0;
+        }
+
+        function interactCreature(name, points) {
+            alert(`🎯 You found a ${name}! +${points} points!`);
+            addScore(points);
+        }
+
+        function addScore(points) {
+            score += points;
+            document.getElementById('score').textContent = score;
+            
+            fetch('/api/add-score', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ points: points })
+            });
+        }
+
+        function updateTime() {
+            const elapsed = Math.floor((Date.now() - timeStarted) / 1000);
+            document.getElementById('time').textContent = elapsed + 's';
+        }
+
+        window.addEventListener('load', () => {
+            animate();
+            setInterval(updateTime, 1000);
+        });
+
+        window.addEventListener('resize', () => {
+            const width = canvas.clientWidth;
+            const height = canvas.clientHeight;
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height);
+        });
+    </script>
+</body>
+</html>

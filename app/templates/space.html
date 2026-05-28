@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌌 Galaxy Explorer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Comic Sans MS', 'Trebuchet MS', cursive;
+            background: radial-gradient(ellipse at center, #0a0e27 0%, #000000 100%);
+            min-height: 100vh;
+            color: #fff;
+            overflow: hidden;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 30px 20px;
+            background: rgba(0, 0, 0, 0.5);
+            border-bottom: 4px dashed #FF00FF;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .header h1 {
+            font-size: 3.5em;
+            color: #FF00FF;
+            text-shadow: 3px 3px 0px #00D4FF;
+            margin-bottom: 10px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+        
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .nav-btn {
+            background: linear-gradient(135deg, #00FF88 0%, #00D4FF 100%);
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        .canvas-wrapper {
+            width: 100%;
+            height: calc(100vh - 200px);
+            position: relative;
+        }
+        
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .controls-overlay {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            border: 3px solid #FF00FF;
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            z-index: 100;
+        }
+        
+        .control-btn {
+            background: linear-gradient(135deg, #FF00FF 0%, #00D4FF 100%);
+            color: #fff;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .control-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 25px rgba(255, 0, 255, 0.5);
+        }
+        
+        .hud {
+            position: fixed;
+            top: 200px;
+            right: 30px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 3px solid #FF00FF;
+            border-radius: 10px;
+            padding: 20px;
+            color: #FF00FF;
+            font-weight: bold;
+            z-index: 100;
+            min-width: 200px;
+        }
+        
+        .hud-item {
+            margin: 10px 0;
+            font-size: 1em;
+        }
+        
+        .hud-value {
+            color: #00D4FF;
+            font-size: 1.2em;
+        }
+        
+        .info-box {
+            position: fixed;
+            top: 200px;
+            left: 30px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 3px solid #00D4FF;
+            border-radius: 10px;
+            padding: 20px;
+            color: #00D4FF;
+            font-weight: bold;
+            z-index: 100;
+            max-width: 250px;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5em;
+            }
+            
+            .hud, .info-box {
+                display: none;
+            }
+            
+            .controls-overlay {
+                bottom: 10px;
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🌌 Galaxy Explorer 🚀</h1>
+        <p style="font-size: 1.3em;">Explore the infinite universe filled with stars and mysteries!</p>
+        <div class="nav-buttons">
+            <button class="nav-btn" onclick="window.location.href='/'">← Back Home</button>
+            <button class="nav-btn" onclick="addScore(100)">🎯 Collect Points</button>
+        </div>
+    </div>
+
+    <div class="canvas-wrapper" id="galaxyCanvas"></div>
+
+    <div class="info-box">
+        <div>🌟 GALAXY EXPLORER 🌟</div>
+        <div style="font-size: 0.9em; margin-top: 10px;">
+            Drag to rotate • Scroll to zoom • Click stars to collect!
+        </div>
+    </div>
+
+    <div class="hud">
+        <div class="hud-item">Score: <span class="hud-value" id="score">0</span></div>
+        <div class="hud-item">Stars: <span class="hud-value" id="starsCollected">0</span></div>
+        <div class="hud-item">Level: <span class="hud-value" id="level">1</span></div>
+        <div class="hud-item">Time: <span class="hud-value" id="time">0s</span></div>
+    </div>
+
+    <div class="controls-overlay">
+        <button class="control-btn" onclick="toggleAnimation()">▶️ Play/Pause</button>
+        <button class="control-btn" onclick="spawnNewStars()">⭐ Spawn Stars</button>
+        <button class="control-btn" onclick="resetGalaxy()">🔄 Reset</button>
+        <button class="control-btn" onclick="toggleSpeed()">⚡ Speed</button>
+    </div>
+
+    <script>
+        let score = 0;
+        let starsCollected = 0;
+        let timeStarted = Date.now();
+        let animating = true;
+        let speedMultiplier = 1;
+
+        const canvas = document.getElementById('galaxyCanvas');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / (window.innerHeight - 200), 0.1, 10000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+
+        renderer.setSize(window.innerWidth, window.innerHeight - 200);
+        renderer.setClearColor(0x000000, 1);
+        canvas.appendChild(renderer.domElement);
+
+        camera.position.z = 150;
+
+        // Create star field
+        const stars = [];
+
+        function createStar(x, y, z, size = 1) {
+            const geometry = new THREE.SphereGeometry(size, 32, 32);
+            const material = new THREE.MeshBasicMaterial({
+                color: new THREE.Color().setHSL(Math.random(), 1, 0.5),
+                emissive: new THREE.Color().setHSL(Math.random(), 1, 0.6)
+            });
+            const star = new THREE.Mesh(geometry, material);
+            star.position.set(x, y, z);
+            star.userData = {
+                originalPosition: { x, y, z },
+                rotation: {
+                    x: Math.random() * 0.1,
+                    y: Math.random() * 0.1,
+                    z: Math.random() * 0.1
+                },
+                speed: Math.random() * 0.02 + 0.01,
+                collected: false
+            };
+            scene.add(star);
+            stars.push(star);
+            return star;
+        }
+
+        // Create initial galaxy
+        function generateGalaxy(count = 100) {
+            for (let i = 0; i < count; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const radius = Math.random() * 200 + 50;
+                const x = Math.cos(angle) * radius;
+                const y = (Math.random() - 0.5) * 100;
+                const z = Math.sin(angle) * radius;
+                createStar(x, y, z, Math.random() * 1.5 + 0.5);
+            }
+        }
+
+        generateGalaxy(100);
+
+        // Create central black hole (visual effect)
+        const blackHoleGeometry = new THREE.SphereGeometry(20, 32, 32);
+        const blackHoleMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
+        const blackHole = new THREE.Mesh(blackHoleGeometry, blackHoleMaterial);
+        scene.add(blackHole);
+
+        // Glow effect
+        const glowGeometry = new THREE.SphereGeometry(20, 32, 32);
+        const glowMaterial = new THREE.MeshBasicMaterial({
+            color: 0xFF00FF,
+            transparent: true,
+            opacity: 0.2
+        });
+        const glow = new THREE.Mesh(glowGeometry, glowMaterial);
+        glow.scale.set(2, 2, 2);
+        scene.add(glow);
+
+        // Raycaster for click detection
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+
+        function onMouseClick(event) {
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -((event.clientY - 200) / (window.innerHeight - 200)) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(stars);
+
+            if (intersects.length > 0) {
+                const star = intersects[0].object;
+                if (!star.userData.collected) {
+                    star.userData.collected = true;
+                    starsCollected++;
+                    addScore(25);
+                    star.material.emissive.setHex(0xFF0000);
+                    document.getElementById('starsCollected').textContent = starsCollected;
+                }
+            }
+        }
+
+        window.addEventListener('click', onMouseClick);
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (animating) {
+                stars.forEach(star => {
+                    star.rotation.x += star.userData.rotation.x * speedMultiplier;
+                    star.rotation.y += star.userData.rotation.y * speedMultiplier;
+                    star.rotation.z += star.userData.rotation.z * speedMultiplier;
+                });
+
+                blackHole.rotation.z += 0.01 * speedMultiplier;
+                glow.rotation.y -= 0.005 * speedMultiplier;
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        function addScore(points) {
+            score += points;
+            document.getElementById('score').textContent = score;
+            
+            fetch('/api/add-score', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ points: points })
+            });
+        }
+
+        function toggleAnimation() {
+            animating = !animating;
+        }
+
+        function spawnNewStars() {
+            generateGalaxy(20);
+            addScore(50);
+        }
+
+        function resetGalaxy() {
+            stars.forEach(star => scene.remove(star));
+            stars.length = 0;
+            starsCollected = 0;
+            score = 0;
+            generateGalaxy(100);
+            document.getElementById('starsCollected').textContent = 0;
+            document.getElementById('score').textContent = 0;
+        }
+
+        function toggleSpeed() {
+            speedMultiplier = speedMultiplier === 1 ? 2 : 1;
+        }
+
+        function updateTime() {
+            const elapsed = Math.floor((Date.now() - timeStarted) / 1000);
+            document.getElementById('time').textContent = elapsed + 's';
+            document.getElementById('level').textContent = Math.floor(starsCollected / 10) + 1;
+        }
+
+        window.addEventListener('load', () => {
+            animate();
+            setInterval(updateTime, 1000);
+        });
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / (window.innerHeight - 200);
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight - 200);
+        });
+    </script>
+</body>
+</html>
