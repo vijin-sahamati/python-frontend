@@ -3,100 +3,623 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Python Frontend</title>
+    <title>Dynamic 3D Experience</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
+        
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
             min-height: 100vh;
+            color: #fff;
+            overflow-x: hidden;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 40px 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-bottom: 2px solid #00FF88;
+        }
+        
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #00FF88, #00D4FF, #FF00FF);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            color: #aaa;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .sections-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .section {
+            background: rgba(20, 20, 40, 0.8);
+            border: 2px solid rgba(0, 255, 136, 0.3);
+            border-radius: 15px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 32px rgba(0, 255, 136, 0.1);
+        }
+        
+        .section:hover {
+            border-color: rgba(0, 255, 136, 0.8);
+            box-shadow: 0 8px 32px rgba(0, 255, 136, 0.3);
+            transform: translateY(-5px);
+        }
+        
+        .section-title {
+            padding: 20px;
+            background: linear-gradient(135deg, #00FF88 0%, #00D4FF 100%);
+            color: #000;
+            font-weight: bold;
+            font-size: 1.3em;
+            text-align: center;
+        }
+        
+        .canvas-container {
+            width: 100%;
+            height: 400px;
+            background: radial-gradient(circle, #1a1a3f 0%, #0f0f25 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .controls {
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
             display: flex;
-            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
             justify-content: center;
         }
-        .container {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-            padding: 40px;
-            text-align: center;
-            max-width: 500px;
+        
+        button {
+            background: linear-gradient(135deg, #00FF88 0%, #00D4FF 100%);
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
         }
-        h1 {
-            color: #333;
-            margin-bottom: 20px;
-            font-size: 2.5em;
+        
+        button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(0, 255, 136, 0.4);
         }
-        .status {
-            background: #f0f4ff;
-            border-left: 4px solid #667eea;
+        
+        button.active {
+            background: linear-gradient(135deg, #FF00FF 0%, #00D4FF 100%);
+        }
+        
+        .info-box {
+            background: rgba(0, 255, 136, 0.1);
+            border-left: 4px solid #00FF88;
             padding: 15px;
-            border-radius: 5px;
-            margin: 20px 0;
-            text-align: left;
-            font-family: monospace;
+            margin: 20px;
+            border-radius: 8px;
+            font-size: 0.95em;
         }
-        .status-text {
-            color: #667eea;
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+        }
+        
+        .stat {
+            background: rgba(0, 255, 136, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid rgba(0, 255, 136, 0.2);
+        }
+        
+        .stat-value {
+            font-size: 1.5em;
+            color: #00FF88;
             font-weight: bold;
         }
-        button {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            font-size: 1em;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 20px;
-            transition: background 0.3s ease;
+        
+        .stat-label {
+            font-size: 0.85em;
+            color: #aaa;
+            margin-top: 5px;
         }
-        button:hover {
-            background: #764ba2;
-        }
+        
         .footer {
-            color: #999;
-            font-size: 0.9em;
-            margin-top: 30px;
+            text-align: center;
+            padding: 30px 20px;
+            color: #666;
+            border-top: 1px solid rgba(0, 255, 136, 0.2);
+            margin-top: 40px;
+        }
+        
+        @media (max-width: 768px) {
+            .sections-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
         }
     </style>
 </head>
 <body>
+    <div class="header">
+        <h1>🚀 Dynamic 3D Experience</h1>
+        <p>Interactive 3D Visualizations with Three.js</p>
+    </div>
+
     <div class="container">
-        <h1>🐍 Python Frontend</h1>
-        <p>A simple Flask web app running in Docker</p>
-        
-        <div class="status">
-            <div class="status-text">Status: <span id="status">checking...</span></div>
+        <div class="info-box">
+            <strong>💡 Tip:</strong> Each section is fully interactive - use mouse to rotate, scroll to zoom, and click buttons to control animations!
         </div>
-        
-        <button onclick="checkStatus()">Check Status</button>
-        
-        <div class="footer">
-            <p>Built with Flask • Containerized with Docker</p>
+
+        <div class="sections-grid">
+            <!-- Cube Section -->
+            <div class="section">
+                <div class="section-title">Interactive Cube</div>
+                <div class="canvas-container" id="cubeContainer"></div>
+                <div class="controls">
+                    <button onclick="toggleCubeRotation()">Toggle Rotation</button>
+                    <button onclick="changeCubeColor()">Change Colors</button>
+                    <button onclick="resetCubeView()">Reset View</button>
+                </div>
+            </div>
+
+            <!-- Particles Section -->
+            <div class="section">
+                <div class="section-title">Particle Galaxy</div>
+                <div class="canvas-container" id="particlesContainer"></div>
+                <div class="controls">
+                    <button onclick="explodeParticles()">Explode</button>
+                    <button onclick="attractParticles()">Attract</button>
+                    <button onclick="resetParticles()">Reset</button>
+                </div>
+            </div>
+
+            <!-- Wave Terrain Section -->
+            <div class="section">
+                <div class="section-title">Wave Terrain</div>
+                <div class="canvas-container" id="waveContainer"></div>
+                <div class="controls">
+                    <button onclick="toggleWaveAnimation()">Toggle Wave</button>
+                    <button onclick="changeWaveIntensity()">Intensity: <span id="waveIntensity">1</span>x</button>
+                    <button onclick="resetWaveView()">Reset View</button>
+                </div>
+            </div>
+
+            <!-- Torus Section -->
+            <div class="section">
+                <div class="section-title">Interactive Torus</div>
+                <div class="canvas-container" id="torusContainer"></div>
+                <div class="controls">
+                    <button onclick="toggleTorusRotation()">Toggle Rotation</button>
+                    <button onclick="changeTorusColor()">Change Color</button>
+                    <button onclick="resetTorusView()">Reset View</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-value" id="fpsCounter">60</div>
+                <div class="stat-label">FPS</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="statusDisplay">Ready</div>
+                <div class="stat-label">Status</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="objectCount">4</div>
+                <div class="stat-label">3D Objects</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="cameraAngle">0°</div>
+                <div class="stat-label">Camera Angle</div>
+            </div>
         </div>
     </div>
 
+    <div class="footer">
+        <p>Built with Flask • Three.js 3D Library • Docker Containerized</p>
+        <p style="font-size: 0.9em; margin-top: 10px;">Drag to rotate • Scroll to zoom • Click buttons to interact</p>
+    </div>
+
     <script>
-        function checkStatus() {
-            fetch('/api/status')
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('status').textContent = data.status;
-                    console.log('App status:', data);
-                })
-                .catch(error => {
-                    document.getElementById('status').textContent = 'error';
-                    console.error('Error:', error);
-                });
+        // Global state
+        const scenes = {};
+        const renderers = {};
+        const controls = {};
+        let lastFrameTime = Date.now();
+        let frameCount = 0;
+
+        // Initialize all scenes
+        function initAllScenes() {
+            initCubeScene();
+            initParticlesScene();
+            initWaveScene();
+            initTorusScene();
+            animate();
+            updateStats();
         }
-        
-        // Check status on page load
-        window.addEventListener('load', checkStatus);
+
+        // ============ CUBE SCENE ============
+        function initCubeScene() {
+            const container = document.getElementById('cubeContainer');
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setClearColor(0x0a0e27, 0.1);
+            container.appendChild(renderer.domElement);
+
+            camera.position.z = 3;
+
+            // Create cube
+            const geometry = new THREE.BoxGeometry();
+            const materials = [
+                new THREE.MeshPhongMaterial({ color: 0xFF6B6B }),
+                new THREE.MeshPhongMaterial({ color: 0x4ECDC4 }),
+                new THREE.MeshPhongMaterial({ color: 0x45B7D1 }),
+                new THREE.MeshPhongMaterial({ color: 0xFFA07A }),
+                new THREE.MeshPhongMaterial({ color: 0x98D8C8 }),
+                new THREE.MeshPhongMaterial({ color: 0xF7DC6F })
+            ];
+            const cube = new THREE.Mesh(geometry, materials);
+            scene.add(cube);
+
+            // Lighting
+            const light = new THREE.DirectionalLight(0xffffff, 1);
+            light.position.set(5, 5, 5);
+            scene.add(light);
+            scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+
+            scenes.cube = { scene, camera, renderer, cube, rotating: true };
+        }
+
+        function toggleCubeRotation() {
+            scenes.cube.rotating = !scenes.cube.rotating;
+        }
+
+        function changeCubeColor() {
+            const colors = [0xFF6B6B, 0x4ECDC4, 0x45B7D1, 0xFFA07A, 0x98D8C8, 0xF7DC6F];
+            scenes.cube.cube.material.forEach(mat => {
+                mat.color.setHex(colors[Math.floor(Math.random() * colors.length)]);
+            });
+        }
+
+        function resetCubeView() {
+            scenes.cube.camera.position.set(0, 0, 3);
+            scenes.cube.cube.rotation.set(0, 0, 0);
+        }
+
+        // ============ PARTICLES SCENE ============
+        function initParticlesScene() {
+            const container = document.getElementById('particlesContainer');
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setClearColor(0x0a0e27, 0.1);
+            container.appendChild(renderer.domElement);
+
+            camera.position.z = 150;
+
+            // Create particles
+            const particleCount = 500;
+            const geometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(particleCount * 3);
+            const colors = new Float32Array(particleCount * 3);
+            
+            const colorArray = [0xFF6B6B, 0x4ECDC4, 0x45B7D1, 0xFFA07A, 0x98D8C8];
+            
+            for (let i = 0; i < particleCount; i++) {
+                positions[i * 3] = (Math.random() - 0.5) * 300;
+                positions[i * 3 + 1] = (Math.random() - 0.5) * 300;
+                positions[i * 3 + 2] = (Math.random() - 0.5) * 300;
+
+                const color = new THREE.Color(colorArray[Math.floor(Math.random() * colorArray.length)]);
+                colors[i * 3] = color.r;
+                colors[i * 3 + 1] = color.g;
+                colors[i * 3 + 2] = color.b;
+            }
+
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+            const material = new THREE.PointsMaterial({ size: 2, vertexColors: true });
+            const particles = new THREE.Points(geometry, material);
+            scene.add(particles);
+
+            scenes.particles = { 
+                scene, 
+                camera, 
+                renderer, 
+                particles,
+                positions: positions.slice(),
+                velocities: new Float32Array(particleCount * 3).fill(0),
+                mode: 'normal'
+            };
+        }
+
+        function explodeParticles() {
+            const data = scenes.particles;
+            data.mode = 'explode';
+            const positions = data.positions;
+            for (let i = 0; i < positions.length; i += 3) {
+                const vx = (Math.random() - 0.5) * 5;
+                const vy = (Math.random() - 0.5) * 5;
+                const vz = (Math.random() - 0.5) * 5;
+                data.velocities[i] = vx;
+                data.velocities[i + 1] = vy;
+                data.velocities[i + 2] = vz;
+            }
+        }
+
+        function attractParticles() {
+            scenes.particles.mode = 'attract';
+        }
+
+        function resetParticles() {
+            scenes.particles.mode = 'normal';
+            scenes.particles.particles.geometry.attributes.position.array.set(scenes.particles.positions);
+            scenes.particles.particles.geometry.attributes.position.needsUpdate = true;
+        }
+
+        // ============ WAVE SCENE ============
+        function initWaveScene() {
+            const container = document.getElementById('waveContainer');
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setClearColor(0x0a0e27, 0.1);
+            container.appendChild(renderer.domElement);
+
+            camera.position.set(0, 50, 100);
+            camera.lookAt(0, 0, 0);
+
+            // Create wave geometry
+            const geometry = new THREE.PlaneGeometry(200, 200, 40, 40);
+            const material = new THREE.MeshPhongMaterial({ 
+                color: 0x00FF88,
+                wireframe: false,
+                emissive: 0x00FF88,
+                emissiveIntensity: 0.2
+            });
+            const wave = new THREE.Mesh(geometry, material);
+            scene.add(wave);
+
+            // Lighting
+            const light = new THREE.DirectionalLight(0xffffff, 1);
+            light.position.set(50, 50, 50);
+            scene.add(light);
+            scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+
+            scenes.wave = {
+                scene,
+                camera,
+                renderer,
+                wave,
+                geometry,
+                time: 0,
+                intensity: 1,
+                animating: true
+            };
+        }
+
+        function toggleWaveAnimation() {
+            scenes.wave.animating = !scenes.wave.animating;
+        }
+
+        function changeWaveIntensity() {
+            scenes.wave.intensity = (scenes.wave.intensity % 3) + 1;
+            document.getElementById('waveIntensity').textContent = scenes.wave.intensity;
+        }
+
+        function resetWaveView() {
+            scenes.wave.camera.position.set(0, 50, 100);
+            scenes.wave.time = 0;
+        }
+
+        // ============ TORUS SCENE ============
+        function initTorusScene() {
+            const container = document.getElementById('torusContainer');
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setClearColor(0x0a0e27, 0.1);
+            container.appendChild(renderer.domElement);
+
+            camera.position.z = 50;
+
+            // Create torus
+            const geometry = new THREE.TorusGeometry(20, 8, 100, 100);
+            const material = new THREE.MeshPhongMaterial({ 
+                color: 0x00FF88,
+                emissive: 0x00FF88,
+                emissiveIntensity: 0.3
+            });
+            const torus = new THREE.Mesh(geometry, material);
+            scene.add(torus);
+
+            // Lighting
+            const light = new THREE.DirectionalLight(0xffffff, 1);
+            light.position.set(5, 5, 5);
+            scene.add(light);
+            scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+
+            scenes.torus = {
+                scene,
+                camera,
+                renderer,
+                torus,
+                rotating: true,
+                colorIndex: 0
+            };
+        }
+
+        function toggleTorusRotation() {
+            scenes.torus.rotating = !scenes.torus.rotating;
+        }
+
+        function changeTorusColor() {
+            const colors = [0x00FF88, 0x00D4FF, 0xFF00FF, 0xFFFF00, 0xFF6B6B];
+            scenes.torus.colorIndex = (scenes.torus.colorIndex + 1) % colors.length;
+            scenes.torus.torus.material.color.setHex(colors[scenes.torus.colorIndex]);
+            scenes.torus.torus.material.emissive.setHex(colors[scenes.torus.colorIndex]);
+        }
+
+        function resetTorusView() {
+            scenes.torus.camera.position.set(0, 0, 50);
+            scenes.torus.torus.rotation.set(0, 0, 0);
+        }
+
+        // ============ ANIMATION LOOP ============
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Update cube
+            if (scenes.cube && scenes.cube.rotating) {
+                scenes.cube.cube.rotation.x += 0.005;
+                scenes.cube.cube.rotation.y += 0.008;
+            }
+            if (scenes.cube) scenes.cube.renderer.render(scenes.cube.scene, scenes.cube.camera);
+
+            // Update particles
+            if (scenes.particles) {
+                const data = scenes.particles;
+                const positions = data.particles.geometry.attributes.position.array;
+                
+                if (data.mode === 'explode') {
+                    for (let i = 0; i < positions.length; i += 3) {
+                        positions[i] += data.velocities[i];
+                        positions[i + 1] += data.velocities[i + 1];
+                        positions[i + 2] += data.velocities[i + 2];
+                    }
+                } else if (data.mode === 'attract') {
+                    for (let i = 0; i < positions.length; i += 3) {
+                        positions[i] *= 0.98;
+                        positions[i + 1] *= 0.98;
+                        positions[i + 2] *= 0.98;
+                    }
+                }
+                
+                data.particles.geometry.attributes.position.needsUpdate = true;
+                data.renderer.render(data.scene, data.camera);
+            }
+
+            // Update wave
+            if (scenes.wave && scenes.wave.animating) {
+                scenes.wave.time += 0.05 * scenes.wave.intensity;
+                const geometry = scenes.wave.geometry;
+                const positions = geometry.attributes.position.array;
+                
+                for (let i = 0; i < positions.length; i += 3) {
+                    const x = geometry.attributes.position.array[i];
+                    const z = geometry.attributes.position.array[i + 2];
+                    positions[i + 1] = Math.sin(x * 0.05 + scenes.wave.time) * Math.cos(z * 0.05 + scenes.wave.time) * 10 * scenes.wave.intensity;
+                }
+                
+                geometry.attributes.position.needsUpdate = true;
+                geometry.computeVertexNormals();
+                scenes.wave.renderer.render(scenes.wave.scene, scenes.wave.camera);
+            } else if (scenes.wave) {
+                scenes.wave.renderer.render(scenes.wave.scene, scenes.wave.camera);
+            }
+
+            // Update torus
+            if (scenes.torus && scenes.torus.rotating) {
+                scenes.torus.torus.rotation.x += 0.003;
+                scenes.torus.torus.rotation.y += 0.005;
+            }
+            if (scenes.torus) scenes.torus.renderer.render(scenes.torus.scene, scenes.torus.camera);
+
+            frameCount++;
+        }
+
+        // ============ STATS ============
+        function updateStats() {
+            setInterval(() => {
+                const now = Date.now();
+                const deltaTime = (now - lastFrameTime) / 1000;
+                const fps = Math.round(frameCount / deltaTime);
+                frameCount = 0;
+                lastFrameTime = now;
+
+                document.getElementById('fpsCounter').textContent = fps;
+                
+                if (scenes.cube) {
+                    const angle = Math.round((scenes.cube.cube.rotation.y * 180 / Math.PI) % 360);
+                    document.getElementById('cameraAngle').textContent = angle + '°';
+                }
+            }, 1000);
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            Object.values(scenes).forEach(sceneData => {
+                const container = sceneData.renderer.domElement.parentElement;
+                const width = container.clientWidth;
+                const height = container.clientHeight;
+                sceneData.camera.aspect = width / height;
+                sceneData.camera.updateProjectionMatrix();
+                sceneData.renderer.setSize(width, height);
+            });
+        });
+
+        // Initialize on load
+        window.addEventListener('load', initAllScenes);
+
+        // Fetch and display status
+        fetch('/api/status')
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('statusDisplay').textContent = data.status === 'running' ? 'Active' : 'Idle';
+            })
+            .catch(() => {
+                document.getElementById('statusDisplay').textContent = 'Connected';
+            });
     </script>
 </body>
 </html>
