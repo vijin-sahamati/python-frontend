@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python Frontend</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            text-align: center;
+            max-width: 500px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+        }
+        .status {
+            background: #f0f4ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            text-align: left;
+            font-family: monospace;
+        }
+        .status-text {
+            color: #667eea;
+            font-weight: bold;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1em;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background 0.3s ease;
+        }
+        button:hover {
+            background: #764ba2;
+        }
+        .footer {
+            color: #999;
+            font-size: 0.9em;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🐍 Python Frontend</h1>
+        <p>A simple Flask web app running in Docker</p>
+        
+        <div class="status">
+            <div class="status-text">Status: <span id="status">checking...</span></div>
+        </div>
+        
+        <button onclick="checkStatus()">Check Status</button>
+        
+        <div class="footer">
+            <p>Built with Flask • Containerized with Docker</p>
+        </div>
+    </div>
+
+    <script>
+        function checkStatus() {
+            fetch('/api/status')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('status').textContent = data.status;
+                    console.log('App status:', data);
+                })
+                .catch(error => {
+                    document.getElementById('status').textContent = 'error';
+                    console.error('Error:', error);
+                });
+        }
+        
+        // Check status on page load
+        window.addEventListener('load', checkStatus);
+    </script>
+</body>
+</html>

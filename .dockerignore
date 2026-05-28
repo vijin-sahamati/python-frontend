@@ -1,0 +1,11 @@
+# Python Frontend App
+node_modules/
+*.pyc
+__pycache__/
+.DS_Store
+.env
+.venv/
+build/
+dist/
+*.egg-info/
+.pytest_cache/
