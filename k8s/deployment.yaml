@@ -13,11 +13,13 @@ spec:
     metadata:
       labels:
         app: python-frontend
+      annotations:
+        timestamp: "2026-05-28"
     spec:
       containers:
       - name: frontend
         image: python-frontend:latest
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         ports:
         - containerPort: 5000
           name: http
